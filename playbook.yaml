@@ -1,0 +1,46 @@
+---
+- name: Check and disable firewall if enabled
+  hosts: all
+  become: yes
+  tasks:
+    - name: Verify firewall is enabled
+      command: systemctl status firewalld
+      register: firewall_status
+      when: ansible_os_family == "RedHat" or ansible_os_family == "Fedora"
+
+    - name: Disable firewall if enabled
+      command: systemctl stop firewalld
+      when: firewall_status.rc == 0
+      become: yes
+      ignore_errors: true
+      when: ansible_os_family == "RedHat" or ansible_os_family == "Fedora"
+
+    - name: Verify firewall is disabled
+      command: systemctl status firewalld
+      register: firewall_status
+      when: ansible_os_family == "Debian"
+
+    - name: Confirm firewall is disabled
+      assert:
+        that:
+          - firewall_status.rc != 0
+        fail_msg: "Firewall is still enabled!"
+        success_msg: "Firewall is now disabled."
+      when: ansible_os_family == "Debian"
+
+    - name: Verify firewall is disabled (RHEL/CentOS)
+      command: systemctl status firewalld
+      register: firewall_status
+      when: ansible_os_family == "RedHat" or ansible_os_family == "Fedora"
+
+    - name: Confirm firewall is disabled (RHEL/CentOS)
+      assert:
+        that:
+          - firewall_status.rc != 0
+        fail_msg: "Firewall is still enabled!"
+        success_msg: "Firewall is now disabled."
+      when: ansible_os_family == "RedHat" or ansible_os_family == "Fedora"
+
+    - name: Final success message
+      debug:
+        msg: "Firewall has been successfully disabled on {{ ansible_distribution }}!"
