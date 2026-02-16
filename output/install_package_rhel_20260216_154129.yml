@@ -1,0 +1,47 @@
+---
+- name: Install nginx on servers
+  hosts: all
+  become: yes
+  gather_facts: yes
+  
+  tasks:
+    # Update package cache (Debian/Ubuntu)
+    - name: Update apt cache (Debian/Ubuntu)
+      apt:
+        update_cache: yes
+      when: ansible_os_family == "Debian"
+      
+    # Install on Debian/Ubuntu
+    - name: Install nginx on Debian/Ubuntu
+      apt:
+        name: nginx
+        state: present
+      when: ansible_os_family == "Debian"
+      
+    # Install on RHEL/CentOS/Rocky/Alma
+    - name: Install nginx on RHEL/CentOS
+      yum:
+        name: nginx
+        state: present
+      when: ansible_os_family == "RedHat"
+      
+    # Install on Fedora
+    - name: Install nginx on Fedora
+      dnf:
+        name: nginx
+        state: present
+      when: ansible_os_family == "Fedora"
+      
+    # Verify installation (works on all)
+    - name: Verify nginx is installed
+      command: which nginx
+      register: package_check
+      changed_when: false
+      failed_when: false
+      
+    - name: Display success message
+      debug:
+        msg: "✓ nginx installed successfully on {{ ansible_distribution }} {{ ansible_distribution_version }}"
+      when: package_check.rc == 0
+
+

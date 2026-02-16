@@ -1,0 +1,44 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+dist/
+build/
+
+# Virtual Environment
+venv/
+env/
+ENV/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+logs/
+*.log
+
+# Configuration (contains credentials)
+config/config.yml
+.env
+
+# Temporary files
+*.tmp
+*.bak
+*.swp
+
+# Output (optional - remove if you want to track playbooks)
+# output/
+
+# Inventory (optional - remove if you want to track inventory)
+# inventory/*.ini

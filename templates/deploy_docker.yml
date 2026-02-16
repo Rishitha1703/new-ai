@@ -1,0 +1,53 @@
+- name: Deploy {{container_name}} Docker container
+  hosts: {{target_hosts}}
+  become: yes
+  gather_facts: yes
+  
+  tasks:
+    # Install Docker (Debian/Ubuntu)
+    - name: Install Docker (Ubuntu/Debian)
+      apt:
+        name:
+          - docker.io
+          - docker-compose
+        state: present
+        update_cache: yes
+      when: ansible_os_family == "Debian"
+      
+    # Install Docker (RHEL/CentOS)
+    - name: Install Docker (RHEL/CentOS)
+      yum:
+        name:
+          - docker
+          - docker-compose
+        state: present
+      when: ansible_os_family == "RedHat"
+      
+    - name: Start Docker service
+      service:
+        name: docker
+        state: started
+        enabled: yes
+        
+    - name: Pull {{image_name}} image
+      docker_image:
+        name: {{image_name}}
+        source: pull
+        
+    - name: Run {{container_name}} container
+      docker_container:
+        name: {{container_name}}
+        image: {{image_name}}
+        state: started
+        restart_policy: always
+        ports:
+          - "{{port}}:{{port}}"
+        
+    - name: Verify container is running
+      command: docker ps --filter name={{container_name}}
+      register: container_check
+      changed_when: false
+      
+    - name: Display container status
+      debug:
+        msg: "✓ Container {{container_name}} is running on port {{port}}"

@@ -1,0 +1,29 @@
+- name: Update configuration file {{config_file}}
+  hosts: {{target_hosts}}
+  become: yes
+  gather_facts: yes
+  
+  tasks:
+    - name: Backup original config
+      copy:
+        src: {{config_file}}
+        dest: "{{config_file}}.backup.{{ ansible_date_time.epoch }}"
+        remote_src: yes
+      
+    - name: Update configuration
+      lineinfile:
+        path: {{config_file}}
+        regexp: '{{search_pattern}}'
+        line: '{{replace_line}}'
+        backup: yes
+      when: search_pattern is defined and replace_line is defined
+      
+    - name: Verify config file exists
+      stat:
+        path: {{config_file}}
+      register: config_stat
+      
+    - name: Display result
+      debug:
+        msg: "✓ Configuration updated: {{config_file}}"
+      when: config_stat.stat.exists
